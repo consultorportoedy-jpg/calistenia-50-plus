@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#14251f">
+<meta name="description" content="Seu plano pessoal de calistenia, treinos e acompanhamento.">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<title>Calistenia 50+</title>
+<style>
+:root{--bg:#101a17;--panel:#1b2b25;--panel2:#24372f;--green:#9ac7a6;--cream:#f1f0e8;--muted:#b6c2ba;--line:#385044;--orange:#e5b875}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--cream);font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}
+header{padding:24px 18px 18px;background:linear-gradient(135deg,#203b30,#14251f);border-bottom:1px solid var(--line)}
+header small{color:var(--green);letter-spacing:.12em;font-weight:700}h1{font-size:27px;margin:5px 0 0}header p{color:var(--muted);margin:4px 0 0}
+main{max-width:760px;margin:auto;padding:16px 14px 90px}.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+button,.tab{border:0;border-radius:12px;padding:12px 10px;font:inherit;font-weight:650;background:var(--panel2);color:var(--cream);cursor:pointer}
+.tab.active,button.primary{background:var(--green);color:#13221b}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;margin:12px 0}
+h2{font-size:20px;margin:0 0 8px}h3{font-size:17px;margin:0 0 6px}.muted{color:var(--muted)}.small{font-size:13px;color:var(--muted)}
+.exercise{padding:13px 0;border-top:1px solid var(--line)}.exercise:first-of-type{border-top:0}
+.exercise p{margin:5px 0;color:var(--muted)}.pill{display:inline-block;background:#30483b;color:var(--green);padding:3px 9px;border-radius:20px;font-size:12px;margin:3px 4px 3px 0}
+.row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.row>*{flex:1}
+input,select,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid var(--line);background:#101a17;color:var(--cream);font:inherit;margin:5px 0 12px}
+label{font-size:14px;color:var(--muted)}.hidden{display:none!important}
+.timer{text-align:center;font-size:44px;font-weight:750;color:var(--green);padding:8px}
+.notice{border-left:3px solid var(--orange);padding:10px 12px;background:#2b2b22;border-radius:8px;color:#f3dfbd;font-size:14px}
+.done{opacity:.55;text-decoration:line-through}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:20px}
+a{color:var(--green)}
+</style>
+</head>
+<body>
+<header><small>SEU TREINO • SEU RITMO</small><h1>Calistenia 50+</h1><p>Força, mobilidade e constância — um passo de cada vez.</p></header>
+<main>
+<nav class="tabs">
+<button class="tab active" data-tab="treinos">Treinos</button>
+<button class="tab" data-tab="registro">Registros</button>
+<button class="tab" data-tab="progresso">Progresso</button>
+</nav>
+<section id="treinos">
+<div class="card">
+<h2>Seu planejamento semanal</h2>
+<p class="muted">Segunda: A • Quarta: B • Sexta: C. Nos outros dias, caminhada confortável, se estiver bem.</p>
+<div class="row">
+<button class="primary" onclick="showWorkout('A')">Treino A</button>
+<button onclick="showWorkout('B')">Treino B</button>
+<button onclick="showWorkout('C')">Treino C</button>
+</div>
+</div>
+<div id="workout" class="card"></div>
+<div class="card">
+<h2>Intervalo / cronômetro</h2>
+<div class="timer" id="clock">01:00</div>
+<div class="row">
+<button class="primary" onclick="startTimer()">Iniciar 1 min</button>
+<button onclick="pauseTimer()">Pausar</button>
+<button onclick="resetTimer()">Zerar</button>
+</div>
+<p class="small">Use o intervalo para recuperar a respiração. Não prenda o ar.</p>
+</div>
+<div class="card">
+<h2>Cuidados importantes</h2>
+<div class="notice">Como sua pressão exige atenção, mantenha o esforço leve a moderado, respire continuamente e não treine até a falha. Não faça força prendendo a respiração. Siga as orientações do profissional que acompanha sua pressão.</div>
+<p class="small">Se houver dor no peito, tontura, falta de ar incomum, sensação de desmaio ou mal-estar importante, interrompa o treino e procure orientação médica. Se a pressão estiver fora dos limites definidos pelo seu médico, adie o exercício.</p>
+</div>
+</section>
+<section id="registro" class="hidden">
+<div class="card">
+<h2>Registro do dia</h2>
+<label>Data</label><input type="date" id="date">
+<div class="row"><div><label>Pressão sistólica (máxima)</label><input type="number" id="sys" placeholder="Ex.: 130"></div><div><label>Pressão diastólica (mínima)</label><input type="number" id="dia" placeholder="Ex.: 80"></div></div>
+<label>Disposição (1 a 5)</label><select id="energy"><option value="">Selecione</option><option>1 - Muito baixa</option><option>2 - Baixa</option><option>3 - Regular</option><option>4 - Boa</option><option>5 - Ótima</option></select>
+<label>Observações</label><textarea id="notes" rows="3" placeholder="Como se sentiu? Fez o treino?"></textarea>
+<button class="primary" onclick="saveLog()">Salvar registro neste aparelho</button>
+</div>
+<div class="card"><h2>Histórico</h2><div id="logs" class="muted">Nenhum registro salvo ainda.</div></div>
+</section>
+<section id="progresso" class="hidden">
+<div class="card"><h2>Medidas e evolução</h2>
+<label>Peso (kg)</label><input type="number" id="weight" step=".1" placeholder="Ex.: 84">
+<label>Cintura (cm)</label><input type="number" id="waist" step=".1" placeholder="Medida na altura do umbigo">
+<label>Data da medição</label><input type="date" id="measureDate">
+<button class="primary" onclick="saveMeasure()">Salvar medição</button>
+</div>
+<div class="card"><h2>Suas medições</h2><div id="measures" class="muted">Nenhuma medição salva ainda.</div></div>
+<div class="card"><h2>Constância</h2><p id="count">Treinos concluídos registrados: 0</p><button onclick="markWorkout()">Registrar treino concluído hoje</button></div>
+</section>
+<footer>Seus registros ficam armazenados apenas neste navegador/aparelho. Não substitui acompanhamento médico.</footer>
+</main>
+<script>
+const plans={
+A:{title:"Treino A — base e controle",items:[
+["Agachamento na cadeira","2 séries de 8 a 12 repetições","Sente e levante da cadeira com controle. Use as mãos como apoio se precisar."],
+["Flexão na parede","2 séries de 8 a 12 repetições","Mãos na parede, corpo alinhado. Flexione os cotovelos e empurre sem prender o ar."],
+["Ponte de glúteos","2 séries de 10 a 12 repetições","Deitado, joelhos dobrados. Eleve o quadril sem arquear demais as costas."],
+["Bird dog","2 séries de 6 por lado","Em quatro apoios, estenda braço e perna opostos. Faça devagar e mantenha o tronco estável."],
+["Elevação de panturrilhas","2 séries de 12 a 15 repetições","Segure numa cadeira e eleve os calcanhares. Desça lentamente."]]},
+B:{title:"Treino B — estabilidade e equilíbrio",items:[
+["Afundo curto com apoio","2 séries de 6 por lado","Segure numa cadeira firme. Leve um pé para trás e flexione pouco os joelhos, sem forçar."],
+["Flexão na parede","2 séries de 8 a 12 repetições","Mãos na parede, corpo alinhado. Flexione e estenda os cotovelos com respiração contínua."],
+["Dead bug simplificado","2 séries de 6 por lado","Deitado, abdômen suave. Movimente um pé de cada vez, sem tirar a lombar do controle."],
+["Ponte de glúteos","2 séries de 10 a 12 repetições","Eleve o quadril de forma confortável e retorne devagar."],
+["Saco de pancadas (opcional)","Até 3 rounds de 1 minuto, bem leve","Somente técnica suave, sem golpes fortes. Descanse 1 minuto entre rounds e pule se houver qualquer desconforto."]]},
+C:{title:"Treino C — corpo todo",items:[
+["Agachamento na cadeira","2 séries de 8 a 12 repetições","Sente e levante com controle, sem acelerar."],
+["Flexão na parede","2 séries de 8 a 12 repetições","Mantenha o corpo alinhado e respire durante todo o movimento."],
+["Bird dog","2 séries de 6 por lado","Estenda braço e perna opostos sem girar o quadril."],
+["Afundo curto com apoio","2 séries de 6 por lado","Use apoio firme e faça amplitude curta e confortável."],
+["Remada com auto-resistência","2 séries de 8 por lado","Uma mão oferece resistência suave à outra. Segure 3 segundos, sem fazer força máxima."],
+["Boxe sombra leve (opcional)","2 rounds de 1 minuto","Movimentos leves, sem velocidade ou potência. Descanse 1 minuto."]]}
+};
+let timer=null,remaining=60;
+function showWorkout(k){let p=plans[k];document.getElementById("workout").innerHTML=`<h2>${p.title}</h2><p class="muted">Aqueça por 5 minutos e termine com 5 minutos de movimentos leves. Descanse 45–75 segundos ou mais, conforme necessário.</p>`+p.items.map((x,i)=>`<div class="exercise"><h3>${i+1}. ${x[0]}</h3><span class="pill">${x[1]}</span><p>${x[2]}</p><label><input type="checkbox" style="width:auto;margin:0 7px 0 0" onchange="this.parentElement.parentElement.classList.toggle('done',this.checked)"> Marcar como feito</label></div>`).join("")}
+function updateClock(){document.getElementById("clock").textContent=String(Math.floor(remaining/60)).padStart(2,"0")+":"+String(remaining%60).padStart(2,"0")}
+function startTimer(){if(timer)return;timer=setInterval(()=>{if(remaining>0){remaining--;updateClock()}else{clearInterval(timer);timer=null;if(navigator.vibrate)navigator.vibrate([200,100,200])}},1000)}
+function pauseTimer(){clearInterval(timer);timer=null}
+function resetTimer(){pauseTimer();remaining=60;updateClock()}
+function get(key){try{return JSON.parse(localStorage.getItem(key)||"[]")}catch(e){return []}}
+function saveLog(){let d=document.getElementById("date").value;if(!d){alert("Escolha a data.");return}let a=get("logs");a.unshift({d,sys:sys.value,dia:dia.value,energy:energy.value,notes:notes.value});localStorage.setItem("logs",JSON.stringify(a));renderLogs();alert("Registro salvo neste aparelho.")}
+function renderLogs(){let a=get("logs");logs.innerHTML=a.length?a.map(x=>`<div class="exercise"><b>${x.d}</b><p>Pressão: ${x.sys||"—"}/${x.dia||"—"} mmHg • Disposição: ${x.energy||"—"}</p><p>${escapeHtml(x.notes||"")}</p></div>`).join(""):"Nenhum registro salvo ainda."}
+function saveMeasure(){let d=measureDate.value;if(!d){alert("Escolha a data.");return}let a=get("measures");a.unshift({d,w:weight.value,c:waist.value});localStorage.setItem("measures",JSON.stringify(a));renderMeasures();alert("Medição salva neste aparelho.")}
+function renderMeasures(){let a=get("measures");measures.innerHTML=a.length?a.map(x=>`<div class="exercise"><b>${x.d}</b><p>Peso: ${x.w||"—"} kg • Cintura: ${x.c||"—"} cm</p></div>`).join(""):"Nenhuma medição salva ainda."}
+function markWorkout(){let a=get("completed");a.unshift(new Date().toISOString().slice(0,10));localStorage.setItem("completed",JSON.stringify(a));renderCount()}
+function renderCount(){count.textContent="Treinos concluídos registrados: "+get("completed").length}
+function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));b.classList.add("active");["treinos","registro","progresso"].forEach(id=>document.getElementById(id).classList.toggle("hidden",id!==b.dataset.tab));}));
+date.value=new Date().toISOString().slice(0,10);measureDate.value=date.value;showWorkout("A");renderLogs();renderMeasures();renderCount();updateClock();
+if("serviceWorker" in navigator && location.protocol.startsWith("http"))window.addEventListener("load",()=>navigator.serviceWorker.register("./service-worker.js"));
+</script>
+</body></html>
