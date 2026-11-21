@@ -110,22 +110,180 @@ C:{title:"Treino C — corpo todo",items:[
 ["Remada com auto-resistência","2 séries de 8 por lado","Uma mão oferece resistência suave à outra. Segure 3 segundos, sem fazer força máxima."],
 ["Boxe sombra leve (opcional)","2 rounds de 1 minuto","Movimentos leves, sem velocidade ou potência. Descanse 1 minuto."]]}
 };
-let timer=null,remaining=60;
-function showWorkout(k){let p=plans[k];document.getElementById("workout").innerHTML=`<h2>${p.title}</h2><p class="muted">Aqueça por 5 minutos e termine com 5 minutos de movimentos leves. Descanse 45–75 segundos ou mais, conforme necessário.</p>`+p.items.map((x,i)=>`<div class="exercise"><h3>${i+1}. ${x[0]}</h3><span class="pill">${x[1]}</span><p>${x[2]}</p><label><input type="checkbox" style="width:auto;margin:0 7px 0 0" onchange="this.parentElement.parentElement.classList.toggle('done',this.checked)"> Marcar como feito</label></div>`).join("")}
-function updateClock(){document.getElementById("clock").textContent=String(Math.floor(remaining/60)).padStart(2,"0")+":"+String(remaining%60).padStart(2,"0")}
-function startTimer(){if(timer)return;timer=setInterval(()=>{if(remaining>0){remaining--;updateClock()}else{clearInterval(timer);timer=null;if(navigator.vibrate)navigator.vibrate([200,100,200])}},1000)}
-function pauseTimer(){clearInterval(timer);timer=null}
-function resetTimer(){pauseTimer();remaining=60;updateClock()}
-function get(key){try{return JSON.parse(localStorage.getItem(key)||"[]")}catch(e){return []}}
-function saveLog(){let d=document.getElementById("date").value;if(!d){alert("Escolha a data.");return}let a=get("logs");a.unshift({d,sys:sys.value,dia:dia.value,energy:energy.value,notes:notes.value});localStorage.setItem("logs",JSON.stringify(a));renderLogs();alert("Registro salvo neste aparelho.")}
-function renderLogs(){let a=get("logs");logs.innerHTML=a.length?a.map(x=>`<div class="exercise"><b>${x.d}</b><p>Pressão: ${x.sys||"—"}/${x.dia||"—"} mmHg • Disposição: ${x.energy||"—"}</p><p>${escapeHtml(x.notes||"")}</p></div>`).join(""):"Nenhum registro salvo ainda."}
-function saveMeasure(){let d=measureDate.value;if(!d){alert("Escolha a data.");return}let a=get("measures");a.unshift({d,w:weight.value,c:waist.value});localStorage.setItem("measures",JSON.stringify(a));renderMeasures();alert("Medição salva neste aparelho.")}
-function renderMeasures(){let a=get("measures");measures.innerHTML=a.length?a.map(x=>`<div class="exercise"><b>${x.d}</b><p>Peso: ${x.w||"—"} kg • Cintura: ${x.c||"—"} cm</p></div>`).join(""):"Nenhuma medição salva ainda."}
-function markWorkout(){let a=get("completed");a.unshift(new Date().toISOString().slice(0,10));localStorage.setItem("completed",JSON.stringify(a));renderCount()}
-function renderCount(){count.textContent="Treinos concluídos registrados: "+get("completed").length}
-function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
-document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));b.classList.add("active");["treinos","registro","progresso"].forEach(id=>document.getElementById(id).classList.toggle("hidden",id!==b.dataset.tab));}));
-date.value=new Date().toISOString().slice(0,10);measureDate.value=date.value;showWorkout("A");renderLogs();renderMeasures();renderCount();updateClock();
-if("serviceWorker" in navigator && location.protocol.startsWith("http"))window.addEventListener("load",()=>navigator.serviceWorker.register("./service-worker.js"));
+let timer=null, remaining=60;
+
+function showWorkout(k){
+    const p = plans[k];
+    const workoutDiv = document.getElementById("workout");
+    workoutDiv.innerHTML = `<h2>${p.title}</h2><p class="muted">Aqueça por 5 minutos e termine com 5 minutos de movimentos leves. Descanse 45–75 segundos ou mais, conforme necessário.</p>`+p.items.map((x,i)=>`<div class="exercise"><h3>${i+1}. ${x[0]}</h3><span class="pill">${x[1]}</span><p>${x[2]}</p><label><input type="checkbox" style="width:auto;margin:0 7px 0 0" onchange="this.parentElement.parentElement.classList.toggle('done',this.checked)"> Marcar como feito</label></div>`).join("");
+}
+
+function updateClock(){
+    document.getElementById("clock").textContent=String(Math.floor(remaining/60)).padStart(2,"0")+":"+String(remaining%60).padStart(2,"0");
+}
+
+function startTimer(){
+    if(timer) return;
+    timer=setInterval(()=>{
+        if(remaining>0){
+            remaining--;
+            updateClock();
+        } else {
+            clearInterval(timer);
+            timer=null;
+            if(navigator.vibrate) navigator.vibrate([200,100,200]);
+        }
+    },1000);
+}
+
+function pauseTimer(){
+    clearInterval(timer);
+    timer=null;
+}
+
+function resetTimer(){
+    pauseTimer();
+    remaining=60;
+    updateClock();
+}
+
+// Função segura para acessar o localStorage
+function getStorage(key){
+    try{
+        return JSON.parse(localStorage.getItem(key) || "[]");
+    } catch(e){
+        console.warn("localStorage indisponível:", e);
+        return [];
+    }
+}
+
+function setStorage(key, value){
+    try{
+        localStorage.setItem(key, JSON.stringify(value));
+    } catch(e){
+        alert("Não foi possível salvar os dados neste navegador. Verifique se o armazenamento local está habilitado.");
+    }
+}
+
+function saveLog(){
+    const dateEl = document.getElementById("date");
+    if(!dateEl.value){
+        alert("Escolha a data.");
+        return;
+    }
+    const sysEl = document.getElementById("sys");
+    const diaEl = document.getElementById("dia");
+    const energyEl = document.getElementById("energy");
+    const notesEl = document.getElementById("notes");
+
+    let a = getStorage("logs");
+    a.unshift({
+        d: dateEl.value,
+        sys: sysEl.value,
+        dia: diaEl.value,
+        energy: energyEl.value,
+        notes: notesEl.value
+    });
+    setStorage("logs", a);
+    renderLogs();
+    alert("Registro salvo neste aparelho.");
+}
+
+function renderLogs(){
+    let a = getStorage("logs");
+    const logsDiv = document.getElementById("logs");
+    if(a.length){
+        logsDiv.innerHTML = a.map(x => `<div class="exercise"><b>${x.d}</b><p>Pressão: ${x.sys||"—"}/${x.dia||"—"} mmHg • Disposição: ${x.energy||"—"}</p><p>${escapeHtml(x.notes||"")}</p></div>`).join("");
+    } else {
+        logsDiv.innerHTML = "Nenhum registro salvo ainda.";
+    }
+}
+
+function saveMeasure(){
+    const dateEl = document.getElementById("measureDate");
+    if(!dateEl.value){
+        alert("Escolha a data.");
+        return;
+    }
+    const weightEl = document.getElementById("weight");
+    const waistEl = document.getElementById("waist");
+
+    let a = getStorage("measures");
+    a.unshift({
+        d: dateEl.value,
+        w: weightEl.value,
+        c: waistEl.value
+    });
+    setStorage("measures", a);
+    renderMeasures();
+    alert("Medição salva neste aparelho.");
+}
+
+function renderMeasures(){
+    let a = getStorage("measures");
+    const measuresDiv = document.getElementById("measures");
+    if(a.length){
+        measuresDiv.innerHTML = a.map(x => `<div class="exercise"><b>${x.d}</b><p>Peso: ${x.w||"—"} kg • Cintura: ${x.c||"—"} cm</p></div>`).join("");
+    } else {
+        measuresDiv.innerHTML = "Nenhuma medição salva ainda.";
+    }
+}
+
+function markWorkout(){
+    let a = getStorage("completed");
+    a.unshift(new Date().toISOString().slice(0,10));
+    setStorage("completed", a);
+    renderCount();
+}
+
+function renderCount(){
+    const countEl = document.getElementById("count");
+    countEl.textContent = "Treinos concluídos registrados: " + getStorage("completed").length;
+}
+
+function escapeHtml(s){
+    if(typeof s !== "string") return "";
+    return s.replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+// Navegação por abas
+document.querySelectorAll(".tab").forEach(b => b.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach(x => x.classList.remove("active"));
+    b.classList.add("active");
+    ["treinos","registro","progresso"].forEach(id => {
+        const section = document.getElementById(id);
+        if(section) section.classList.toggle("hidden", id !== b.dataset.tab);
+    });
+}));
+
+// Inicialização
+(function init(){
+    const today = new Date();
+    // Ajuste para o fuso horário local
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, "0");
+    const dd = String(today.getDate()).padStart(2, "0");
+    const localDate = `${yyyy}-${mm}-${dd}`;
+
+    const dateEl = document.getElementById("date");
+    const measureDateEl = document.getElementById("measureDate");
+    if(dateEl) dateEl.value = localDate;
+    if(measureDateEl) measureDateEl.value = localDate;
+
+    showWorkout("A");
+    renderLogs();
+    renderMeasures();
+    renderCount();
+    updateClock();
+
+    // Registro do Service Worker
+    if("serviceWorker" in navigator && location.protocol.startsWith("http")){
+        window.addEventListener("load", () => {
+            navigator.serviceWorker.register("./service-worker.js")
+                .catch(err => console.warn("Falha ao registrar o Service Worker:", err));
+        });
+    }
+})();
 </script>
-</body></html>
+</body>
+</html>
